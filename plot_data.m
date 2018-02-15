@@ -15,7 +15,7 @@ for file=1:numel(data.filename)
 end
 data.filedate=cell2mat(data.filedate);
 %read the date to a data table
-data.table = readtable([data.filepath, '\\', data.filename{1}], 'Delimiter', ';');
+data.table = readtable([data.filepath, '\\', data.filename{35}], 'Delimiter', ';');
 
 %change all zeros (no event) to nans
 data.table.vx_events(data.table.vx_events==0)=nan;
@@ -60,25 +60,18 @@ plasma.ax.Position=[75, 75, 450, 320];
 plasma.ax.XGrid='on';
 plasma.ax.YGrid='on';
 
+
+%highlight the bbf events in plasma plot
+plasma.plot.c3=highlight_event(data.table,plasma.ax,3);
+plasma.plot.c2=highlight_event(data.table,plasma.ax,2);
+plasma.plot.c1=highlight_event(data.table,plasma.ax,1);
+
 %create the timeline
 plasma.plot.timeline=plot(plasma.ax, [data.table.date_number(1), data.table.date_number(1)], plasma.ax.YLim);
 %style the timeline
 plasma.plot.timeline.LineWidth=5;
 plasma.plot.timeline.Color=[0.85,0.85,0.85];
 plasma.plot.timeline.LineStyle='-';
-
-%check whether there are bbf events
-%plot colored area of bbf events
-plasma.plot.vr_events=area(plasma.ax,nan,nan);
-[plasma.plot.vr_events.XData, plasma.plot.vr_events.YData]=deal(data.table.date_number, max(plasma.ax.YLim)*data.table.vr_events);
-%style the area plot
-plasma.plot.vr_events.BaseValue=min(plasma.ax.YLim);
-plasma.plot.vr_events.FaceColor=[0,0.75,0.75];
-plasma.plot.vr_events.FaceAlpha=0.8;
-plasma.plot.vr_events.EdgeColor=[0, 0.75, 0.75];
-plasma.plot.vr_events.EdgeAlpha=0.8;
-plasma.plot.vr_events.LineWidth=3;
-plasma.plot.vr_events.LineStyle=':';
 
 %plot the plasma data
 plasma.plot.vx=plot(plasma.ax, data.table.date_number, data.table.vx_gsm3);
@@ -181,17 +174,10 @@ location.time.plot.timeline.LineWidth=5;
 location.time.plot.timeline.Color=[0.85,0.85,0.85];
 location.time.plot.timeline.LineStyle='-';
 
-%plot colored area of bbf events
-location.time.plot.events=area(location.time.ax,nan,nan);
-[location.time.plot.events.XData, location.time.plot.events.YData]=deal(data.table.date_number, max(location.time.ax.YLim)*data.table.vr_events);
-%style the area plot
-location.time.plot.events.BaseValue=min(location.time.ax.YLim);
-location.time.plot.events.FaceColor=[0,0.75,0.75];
-location.time.plot.events.FaceAlpha=0.8;
-location.time.plot.events.EdgeColor=[0, 0.75, 0.75];
-location.time.plot.events.EdgeAlpha=0.8;
-location.time.plot.events.LineWidth=3;
-location.time.plot.events.LineStyle=':';
+%highlight the bbf events in location plot
+location.time.plot.c3=highlight_event(data.table,location.time.ax,3);
+location.time.plot.c2=highlight_event(data.table,location.time.ax,2);
+location.time.plot.c1=highlight_event(data.table,location.time.ax,1);
 
 %plot the location.time data
 location.time.plot.x=plot(location.time.ax, data.table.date_number, data.table.x_gsmRE3);
@@ -290,14 +276,36 @@ location.space.plot.orbit.LineStyle='-';
 
 %plot the events on the orbit
 events=data.table.vr_events;
-location.space.plot.events=plot3(location.space.ax,nan,nan,nan);
-[location.space.plot.events.XData, location.space.plot.events.YData, location.space.plot.events.ZData]=deal(data.table.x_gsmRE3(events>0), data.table.y_gsmRE3(events>0), data.table.z_gsmRE3(events>0));
+location.space.plot.c1=plot3(location.space.ax,nan,nan,nan);
+[location.space.plot.c1.XData, location.space.plot.c1.YData, location.space.plot.c1.ZData]=deal(data.table.x_gsmRE3(events==1), data.table.y_gsmRE3(events==1), data.table.z_gsmRE3(events==1));
 %style the events
-location.space.plot.events.LineStyle='none';
-location.space.plot.events.Color=[0,0.75,0.75];
-location.space.plot.events.Marker='o';
-location.space.plot.events.MarkerSize=5;
-location.space.plot.events.MarkerFaceColor=[0,0.75,0.75];
+location.space.plot.c1.LineStyle='none';
+location.space.plot.c1.Color=[0.95,0.95,0.0];
+location.space.plot.c1.Marker='o';
+location.space.plot.c1.MarkerSize=5;
+location.space.plot.c1.MarkerFaceColor=[0.95,0.95,0];
+
+%plot the events on the orbit
+events=data.table.vr_events;
+location.space.plot.c2=plot3(location.space.ax,nan,nan,nan);
+[location.space.plot.c2.XData, location.space.plot.c2.YData, location.space.plot.c2.ZData]=deal(data.table.x_gsmRE3(events==2), data.table.y_gsmRE3(events==2), data.table.z_gsmRE3(events==2));
+%style the events
+location.space.plot.c2.LineStyle='none';
+location.space.plot.c2.Color=[1,0.6,0];
+location.space.plot.c2.Marker='o';
+location.space.plot.c2.MarkerSize=5;
+location.space.plot.c2.MarkerFaceColor=[1,0.6,0];
+
+%plot the events on the orbit
+events=data.table.vr_events;
+location.space.plot.c3=plot3(location.space.ax,nan,nan,nan);
+[location.space.plot.c3.XData, location.space.plot.c3.YData, location.space.plot.c3.ZData]=deal(data.table.x_gsmRE3(events==3), data.table.y_gsmRE3(events==3), data.table.z_gsmRE3(events==3));
+%style the events
+location.space.plot.c3.LineStyle='none';
+location.space.plot.c3.Color=[0.75,0,0];
+location.space.plot.c3.Marker='o';
+location.space.plot.c3.MarkerSize=5;
+location.space.plot.c3.MarkerFaceColor=[0.75,0,0];
 
 %plot the satellite
 [x_sat, y_sat, z_sat] = sphere(20);
@@ -344,10 +352,14 @@ location.space.plot.sat.EdgeAlpha=0;
                 [location.time.plot.y.XData, location.time.plot.y.YData]=deal(data.table.date_number, data.table.y_gsmRE3);
                 [location.time.plot.z.XData, location.time.plot.z.YData]=deal(data.table.date_number, data.table.z_gsmRE3);
                 [location.time.plot.r.XData, location.time.plot.r.YData]=deal(data.table.date_number, data.table.r_gsmRE3);
-                %update location.space plot
+                %highlight the events in the satellite orbit
                 events=data.table.vr_events;
-                [location.space.plot.events.XData, location.space.plot.events.YData, location.space.plot.events.ZData]=deal(data.table.x_gsmRE3(events>0), data.table.y_gsmRE3(events>0), data.table.z_gsmRE3(events>0));
+                [location.space.plot.c1.XData, location.space.plot.c1.YData, location.space.plot.c1.ZData]=deal(data.table.x_gsmRE3(events==1), data.table.y_gsmRE3(events==1), data.table.z_gsmRE3(events==1));
+                [location.space.plot.c2.XData, location.space.plot.c2.YData, location.space.plot.c2.ZData]=deal(data.table.x_gsmRE3(events==2), data.table.y_gsmRE3(events==2), data.table.z_gsmRE3(events==2));
+                [location.space.plot.c3.XData, location.space.plot.c3.YData, location.space.plot.c3.ZData]=deal(data.table.x_gsmRE3(events==3), data.table.y_gsmRE3(events==3), data.table.z_gsmRE3(events==3));
+                %draw orbit of satellite
                 [location.space.plot.orbit.XData, location.space.plot.orbit.YData, location.space.plot.orbit.ZData]=deal(data.table.x_gsmRE3, data.table.y_gsmRE3, data.table.z_gsmRE3);
+                %draw satellite
                 [location.space.plot.sat.XData, location.space.plot.sat.YData, location.space.plot.sat.ZData]=deal(x_sat*radius+data.table.x_gsmRE3(1), y_sat*radius+data.table.y_gsmRE3(1), z_sat*radius+data.table.z_gsmRE3(1));
                 
                 %update plasma plot
@@ -370,13 +382,24 @@ location.space.plot.sat.EdgeAlpha=0;
              
                 %check whether there are bbf events and update data
                 data.table.vr_events(data.table.vr_events==0)=nan; %change all zeros (no event) to nans
-                [plasma.plot.vr_events.XData, plasma.plot.vr_events.YData]=deal(data.table.date_number, max(plasma.ax.YLim)*data.table.vr_events);
-                [location.time.plot.events.XData, location.time.plot.events.YData]=deal(data.table.date_number, max(location.time.ax.YLim)*data.table.vr_events);
-                %style the area plot
-                plasma.plot.vr_events.BaseValue=min(plasma.ax.YLim);
-                location.time.plot.events.BaseValue=min(location.time.ax.YLim);
                 
+                %highlight the bbf events in the location plot
+                plasma.plot.c1.delete;
+                plasma.plot.c2.delete;
+                plasma.plot.c3.delete;
+                plasma.plot.c3=highlight_event(data.table,plasma.ax,3);
+                plasma.plot.c2=highlight_event(data.table,plasma.ax,2);
+                plasma.plot.c1=highlight_event(data.table,plasma.ax,1);
                 
+                %highlight the bbf events in the location plot
+                location.time.plot.c1.delete;
+                location.time.plot.c2.delete;
+                location.time.plot.c3.delete;
+                location.time.c3=highlight_event(data.table,location.time.ax,3);
+                location.time.c2=highlight_event(data.table,location.time.ax,2);
+                location.time.c1=highlight_event(data.table,location.time.ax,1);
+                
+              
                 
                 
                 %exit loop after loading the data
@@ -442,9 +465,47 @@ location.space.plot.sat.EdgeAlpha=0;
 
 
 
+    
+    %filter events after their classification
+    function filtered_events=filter_event(events, class)
+        events(events~=class)=nan;
+        filtered_events=events/class;
+    end
+
+
+
+    function caxis_area=highlight_event(data,caxis,class)
+        %create the area
+        caxis_area=area(caxis, data.date_number, max(caxis.YLim)*filter_event(data.vr_events, class));
+        %style the area
+        caxis_area.LineWidth=3;
+        caxis_area.LineStyle=':';
+        caxis_area.EdgeAlpha=0.6;
+        caxis_area.FaceAlpha=0.6;
+        caxis_area.BaseLine.BaseValue=min(caxis.YLim);
+        
+        %style the area dependent on the classification
+        if class==1
+            caxis_area.FaceColor=[0.95,0.95,0];
+            caxis_area.EdgeColor=[0.95,0.95,0];
+        elseif class==2
+            caxis_area.FaceColor=[1,0.6,0];
+            caxis_area.EdgeColor=[1,0.6,0];
+        elseif class==3
+            caxis_area.FaceColor=[0.75,0,0];
+            caxis_area.EdgeColor=[0.75,0,0];
+        end;
+        
+        uistack(caxis_area, 'bottom');
+    end
+
+
 
 %turn on visibility after creating all axes and controls
 plasma.fig.Visible = 'on';
 location.fig.Visible = 'on';
+
+
+
 
 end

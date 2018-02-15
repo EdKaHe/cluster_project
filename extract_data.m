@@ -9,8 +9,8 @@ irfu_dir=path.irfu_dir{1};
 %Make function executable without input arguments
 if nargin==0
     display('No input arguments are given! Default values are taken...')
-    startdate=[2016, 01, 01]; %[yy mm dd]
-    enddate=[2016, 12, 31]; %[yy mm dd]
+    startdate=[2010, 01, 01]; %[yy mm dd]
+    enddate=[2012, 12, 31]; %[yy mm dd]
 elseif nargin==1
     display('Please enter start- and enddate! Process aborted...')
     return
@@ -68,7 +68,7 @@ for id=1:numel(time_period)
     
     %Relevant spacecraft: (either integer 1-4 or array of integers, e.g.
     %[1, 3, 4])
-    SC_hia = 2;
+    SC_hia = 3;
     SC_all = [1 2 3 4];
     
     %% READ/CALCULATE EPHIMERIS
@@ -92,10 +92,8 @@ for id=1:numel(time_period)
         continue
     end
     
-    gsmVhia3=gsmVhia2;
-    gseVhia3=gseVhia2;
-    
-    if isempty(gseVhia3) && isempty(gsmVhia3) %analyze data if velocity data is available
+    %analyze data whether velocity data is available
+    if isempty(gseVhia3) && isempty(gsmVhia3) 
        gseVhia3=nan(size(gseRE3));
        gseVhia3(:,1)=gseRE3(:,1);
        gsmVhia3=nan(size(gseRE3));
