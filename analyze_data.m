@@ -11,9 +11,9 @@ data.filename = {data.filename.name};
 %define meta paths and names
 events.filepath=path.events_dir{1};
 events.filename='events.csv';
-events.table=table({},[],[],[],[],{});
+events.table=table({},[],[],[],[],{}, [], [], [], [], [], []);
 events.table.Properties.VariableNames={'filename', 'start_date', 'end_date',...
-    'duration', 'classification', 'component'};
+    'duration', 'classification', 'component', 'v_max', 'v_mean', 'x', 'y', 'z', 'r'};
 
 %define meta paths and names
 meta.filepath = path.meta_data_dir{1};
@@ -56,10 +56,10 @@ for file=1:numel(data.filename)
     
     %look for bbf in different velocities (currently, all events that occur
     %in v_x, v_y and v_z also occur in v_r)
-    [vx_events, vx_event_properties, ~]=bbf_finder(vx, vx, x, t, 'vx', filename);
-    [vy_events, vy_event_properties, ~]=bbf_finder(vy, vx, x, t, 'vy', filename);
-    [vz_events, vz_event_properties, ~]=bbf_finder(vz, vx, x, t, 'vz', filename);
-    [vr_events, vr_event_properties, events_total]=bbf_finder(vr, vx, x, t, 'vr', filename);
+    [vx_events, vx_event_properties, ~]=bbf_finder(vx, vx, x, y, z, r, t, 'vx', filename);
+    [vy_events, vy_event_properties, ~]=bbf_finder(vy, vx, x, y, z, r, t, 'vy', filename);
+    [vz_events, vz_event_properties, ~]=bbf_finder(vz, vx, x, y, z, r, t, 'vz', filename);
+    [vr_events, vr_event_properties, events_total]=bbf_finder(vr, vx, x, y, z, r, t, 'vr', filename);
     
     %add the events to the data table
     data.table.vx_events=vx_events;
@@ -72,13 +72,12 @@ for file=1:numel(data.filename)
     
     
     
-    
+
     %add the event properties to the event table
     events.table=vertcat(events.table, vx_event_properties, vy_event_properties,...
         vz_event_properties, vr_event_properties);
     %delete rows that containt nans (no event detected)
     events.table=events.table(~any(ismissing(events.table)'),:);
-    
     
     
     
@@ -95,17 +94,17 @@ for file=1:numel(data.filename)
     end
     
     display(sprintf('*** Analyzing file %d/%d took %0.2fs ***', file, numel(data.filename), toc))
-    
+   
 end
 
 
 
 
-%sort the table after their start date
-events.table=sortrows(events.table, 'start_date');
 
 %export event data if there is no old data available
 if ~exist([events.filepath, '\\', events.filename],'file')
+    %sort the table after their start date
+    events.table=sortrows(events.table, 'start_date');
     writetable(events.table, [events.filepath, '\\', events.filename], 'Delimiter', ';');
 else
     %read the old data
@@ -114,6 +113,9 @@ else
     %add all files from the old table that have not been updates
     updated_events=ismember(events.old_table.start_date,events.table.start_date);
     events.table=vertcat(events.table, events.old_table(find(~updated_events),:));
+    
+    %sort the table after their start date
+    events.table=sortrows(events.table, 'start_date');
     
     %export the meta data
     writetable(events.table, [events.filepath, '\\', events.filename], 'Delimiter', ';');
@@ -161,7 +163,7 @@ end
 
 
 %find bbf events based on one velocity v_i and a positive v_x component
-function [vi_events, event_properties, events_total]=bbf_finder(vi, vx, x, t, component, filename)
+function [vi_events, event_properties, events_total]=bbf_finder(vi, vx, x, y, z, r, t, component, filename)
 
 %initialize vector that contain 0 for no event and 1 for
 %events
@@ -184,19 +186,25 @@ event_end_date={nan};
 event_duration={nan};
 event_classification={nan};
 event_component={nan};
+event_vi_max={nan};
+event_vi_mean={nan};
+event_x={nan};
+event_y={nan};
+event_z={nan};
+event_r={nan};
 
 %iterate through each the velocity vector
 for index=2:numel(vi)
     %possible events start at v > 100km/s and ends at v < 100km/s
-    if vi(index)>100 && vi(index-1)<100
+    if abs(vi(index))>100 && abs(vi(index-1))<100
         start_index=index-1;
-    elseif vi(index-1)>100 && vi(index)<100
+    elseif abs(vi(index-1))>100 && abs(vi(index))<100
         end_index=index;
         new_event=1;
     end
 
     %check if velocity is above 400km/s
-    if ~isempty(find(vi(start_index:end_index)>400)) && new_event==1
+    if ~isempty(find(abs(vi(start_index:end_index))>400)) && new_event==1
         new_event=0;
         events_total=events_total+1;
         
@@ -228,7 +236,14 @@ for index=2:numel(vi)
         event_duration{events_total}=(t(end_index)-t(start_index))*24*60*60;
         event_classification{events_total}=class;
         event_component{events_total}=component;
+        event_vi_max{events_total}=signed_max_abs(vi(start_index:end_index));
+        event_vi_mean{events_total}=mean(vi(start_index:end_index));
+        event_x{events_total}=get_location(x(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});
+        event_y{events_total}=get_location(y(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});;
+        event_z{events_total}=get_location(z(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});;
+        event_r{events_total}=get_location(r(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});;
     end
+    
     
 end
 
@@ -236,8 +251,19 @@ end
 
 
 %write properties to table
-event_properties=table(event_filename', cell2mat(event_start_date'), cell2mat(event_end_date'), cell2mat(event_duration'), cell2mat(event_classification'), event_component');
+event_properties=table(event_filename', cell2mat(event_start_date'), cell2mat(event_end_date'), cell2mat(event_duration'), cell2mat(event_classification'), event_component', cell2mat(event_vi_max'), cell2mat(event_vi_mean'), cell2mat(event_x'), cell2mat(event_y'), cell2mat(event_z'), cell2mat(event_r'));
 event_properties.Properties.VariableNames={'filename', 'start_date', 'end_date',...
-    'duration', 'classification', 'component'};
+    'duration', 'classification', 'component', 'v_max', 'v_mean', 'x', 'y', 'z', 'r'};
+end
 
+function signed_max_abs_val=signed_max_abs(data)
+    [~,max_abs_index]=max(abs(data));
+    signed_max_abs_val=data(max_abs_index);
+end
+
+function location=get_location(ri,vi,vmax)
+    location=ri(vi==vmax);
+    if numel(location)>1
+        location=mean(location);
+    end
 end
