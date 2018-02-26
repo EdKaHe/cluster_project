@@ -9,7 +9,7 @@ irfu_dir=path.irfu_dir{1};
 %Make function executable without input arguments
 if nargin==0
     display('No input arguments are given! Default values are taken...')
-    startdate=[2010, 01, 01]; %[yy mm dd]
+    startdate=[2001, 01, 01]; %[yy mm dd]
     enddate=[2012, 12, 31]; %[yy mm dd]
 elseif nargin==1
     display('Please enter start- and enddate! Process aborted...')
@@ -68,7 +68,7 @@ for id=1:numel(time_period)
     
     %Relevant spacecraft: (either integer 1-4 or array of integers, e.g.
     %[1, 3, 4])
-    SC_hia = 3;
+    SC_hia = [1, 3];
     SC_all = [1 2 3 4];
     
     %% READ/CALCULATE EPHIMERIS
@@ -92,22 +92,61 @@ for id=1:numel(time_period)
         continue
     end
     
-    %analyze data whether velocity data is available
-    if isempty(gseVhia3) && isempty(gsmVhia3) 
+    %analyze data whether velocity data is available for sc1
+    if isempty(gseVhia1) && isempty(gsmVhia1) 
+       gseVhia1=nan(size(gseRE1));
+       gseVhia1(:,1)=gseRE1(:,1);
+       gsmVhia1=nan(size(gseRE1));
+       gsmVhia1(:,1)=gseRE1(:,1);
+    end
+    %analyze data whether velocity data is available for sc1
+    if isempty(gseVhia3) && isempty(gsmVhia3)
        gseVhia3=nan(size(gseRE3));
        gseVhia3(:,1)=gseRE3(:,1);
        gsmVhia3=nan(size(gseRE3));
        gsmVhia3(:,1)=gseRE3(:,1);
     end
     
-    %resample timelines
+    %resample timelines for sc1
+    t_gseVhia1=gseVhia1(:,1);
+    t_gsmVhia1=gsmVhia1(:,1);
+    t_gseRE1=gseRE1(:,1);
+    t_gsmRE1=gsmRE1(:,1);    
+    gseVhia1_res=gseVhia1(:,2:5); %actually not resampled since gseVhia3 is reference
+    
+    %resample timelines for sc3
     t_gseVhia3=gseVhia3(:,1); %reference timeline from velocity data of SC3
     t_gsmVhia3=gsmVhia3(:,1); %reference timeline from velocity data of SC3
     t_gseRE3=gseRE3(:,1);
     t_gsmRE3=gsmRE3(:,1);
     gseVhia3_res=gseVhia3(:,2:5); %actually not resampled since gseVhia3 is reference
     
-    %resample gsm velocity if possible
+    %resample gsm velocity of sc1 if possible
+    if size(gsmVhia1,1)>1
+        %resample data if more than one datapoint is available
+        gsmVhia1_res=interp1(t_gsmVhia1,gsmVhia1(:,2:5),t_gseVhia1); %resample to timeline of sc3
+    else
+        %no resampling possible for a single datapoint
+        gsmVhia1_res=gsmVhia1(:,2:5);
+    end
+    %resample gse coordinates if possible
+    if size(gseRE1,1)>1
+        %resample data if more than one datapoint is available
+        gseRE1_res=interp1(t_gseRE1,gseRE1(:,2:5),t_gseVhia1);
+    else
+        %no resampling possible for a single datapoint
+        gseRE1_res=gseRE1(:,2:5);
+    end
+    %resample gsm coordinates if possible
+    if size(gsmRE1,1)>1
+        %resample data if more than one datapoint is available
+        gsmRE1_res=interp1(t_gsmRE1,gsmRE1(:,2:5),t_gseVhia1);
+    else
+        %no resampling possible for a single datapoint
+        gsmRE1_res=gsmRE1(:,2:5);
+    end
+    
+    %resample gsm velocity of sc3 if possible
     if size(gsmVhia3,1)>1
         %resample data if more than one datapoint is available
         gsmVhia3_res=interp1(t_gsmVhia3,gsmVhia3(:,2:5),t_gseVhia3);
@@ -133,7 +172,24 @@ for id=1:numel(time_period)
     end
     
     %generate variables required for table dataformat
-    date_number=datenum(irf_time(t_gseVhia3,'epoch>vector'));
+    dt1=datenum(irf_time(t_gseVhia1,'epoch>vector'));
+    x_gseRE1=gseRE1_res(:,1);
+    y_gseRE1=gseRE1_res(:,2);
+    z_gseRE1=gseRE1_res(:,3);
+    r_gseRE1=gseRE1_res(:,4);
+    x_gsmRE1=gsmRE1_res(:,1);
+    y_gsmRE1=gsmRE1_res(:,2);
+    z_gsmRE1=gsmRE1_res(:,3);
+    r_gsmRE1=gsmRE1_res(:,4);
+    vx_gse1=gseVhia1_res(:,1);
+    vy_gse1=gseVhia1_res(:,2);
+    vz_gse1=gseVhia1_res(:,3);
+    vr_gse1=gseVhia1_res(:,4);
+    vx_gsm1=gsmVhia1_res(:,1);
+    vy_gsm1=gsmVhia1_res(:,2);
+    vz_gsm1=gsmVhia1_res(:,3);
+    vr_gsm1=gsmVhia1_res(:,4);
+    dt3=datenum(irf_time(t_gseVhia3,'epoch>vector'));
     x_gseRE3=gseRE3_res(:,1);
     y_gseRE3=gseRE3_res(:,2);
     z_gseRE3=gseRE3_res(:,3);
@@ -150,18 +206,35 @@ for id=1:numel(time_period)
     vy_gsm3=gsmVhia3_res(:,2);
     vz_gsm3=gsmVhia3_res(:,3);
     vr_gsm3=gsmVhia3_res(:,4);
-    
-    %create data table for spacecraft 3
-    dt3=table(date_number, x_gseRE3, y_gseRE3, z_gseRE3, r_gseRE3,...
+   
+    %create data table for spacecraft
+    dt1=table(dt1, ...
+        x_gseRE1, y_gseRE1, z_gseRE1, r_gseRE1,...
+        x_gsmRE1, y_gsmRE1, z_gsmRE1, r_gsmRE1,...
+        vx_gse1, vy_gse1, vz_gse1, vr_gse1,...
+        vx_gsm1, vy_gsm1, vz_gsm1, vr_gsm1);
+    dt1.Properties.VariableNames={'dt',...
+        'x_gse', 'y_gse', 'z_gse', 'r_gse',...
+        'x_gsm', 'y_gsm', 'z_gsm', 'r_gsm',...
+        'vx_gse', 'vy_gse', 'vz_gse', 'vr_gse',...
+        'vx_gsm', 'vy_gsm', 'vz_gsm', 'vr_gsm'};
+    dt3=table(dt3, ...
+        x_gseRE3, y_gseRE3, z_gseRE3, r_gseRE3,...
         x_gsmRE3, y_gsmRE3, z_gsmRE3, r_gsmRE3,...
         vx_gse3, vy_gse3, vz_gse3, vr_gse3,...
         vx_gsm3, vy_gsm3, vz_gsm3, vr_gsm3);
+    dt3.Properties.VariableNames={'dt',...
+        'x_gse', 'y_gse', 'z_gse', 'r_gse',...
+        'x_gsm', 'y_gsm', 'z_gsm', 'r_gsm',...
+        'vx_gse', 'vy_gse', 'vz_gse', 'vr_gse',...
+        'vx_gsm', 'vy_gsm', 'vz_gsm', 'vr_gsm'};
     
     %save table to character seperated value file
     if ~exist(extracted_data_dir,'dir')
         mkdir(extracted_data_dir);
     end
-    writetable(dt3, [extracted_data_dir, '\\sc3_', date_year, date_month, date_day, '.csv'], 'Delimiter', ';')
+    writetable(dt1, [extracted_data_dir, '\\c1_', date_year, date_month, date_day, '.csv'], 'Delimiter', ';')
+    writetable(dt3, [extracted_data_dir, '\\c3_', date_year, date_month, date_day, '.csv'], 'Delimiter', ';')
     
     
     

@@ -11,9 +11,10 @@ data.filename = {data.filename.name};
 %define meta paths and names
 events.filepath=path.events_dir{1};
 events.filename='events.csv';
-events.table=table({},[],[],[],[],{}, [], [], [], [], [], []);
+events.table=table({},[],[],[],[],{}, [], [], [], [], [], [], []);
 events.table.Properties.VariableNames={'filename', 'start_date', 'end_date',...
-    'duration', 'classification', 'component', 'v_max', 'v_mean', 'x', 'y', 'z', 'r'};
+    'duration', 'classification', 'component', 'v_max', 'v_mean', 'x', 'y', 'z', 'r',...
+    'spacecraft'};
 
 %define meta paths and names
 meta.filepath = path.meta_data_dir{1};
@@ -25,6 +26,11 @@ for file=1:numel(data.filename)
     %extract filedate in new format
     dataname_split=strsplit(data.filename{file},'_');
     data.filedate{file}=datenum(dataname_split{2}, 'yyyymmdd');
+
+    %get the spacecraft
+    spacecraft=strsplit(data.filename{file}, '_');
+    spacecraft=spacecraft{1};
+    spacecraft=uint8(str2double(spacecraft(2)));
     
     %load current data
     data.table = readtable([data.filepath, '\\', data.filename{file}], 'Delimiter', ';');
@@ -37,29 +43,29 @@ for file=1:numel(data.filename)
     end
     
     %get the velocities
-    vx=data.table.vx_gsm3;
-    vy=data.table.vy_gsm3;
-    vz=data.table.vz_gsm3;
-    vr=data.table.vr_gsm3;
+    vx=data.table.vx_gsm;
+    vy=data.table.vy_gsm;
+    vz=data.table.vz_gsm;
+    vr=data.table.vr_gsm;
     
     %get the coordinates
-    x=data.table.x_gsmRE3;
-    y=data.table.y_gsmRE3;
-    z=data.table.z_gsmRE3;
-    r=data.table.r_gsmRE3;
+    x=data.table.x_gsm;
+    y=data.table.y_gsm;
+    z=data.table.z_gsm;
+    r=data.table.r_gsm;
     
     %get the timestamp
-    t=data.table.date_number;
+    t=data.table.dt;
     
     %get the filename
     filename=data.filename{file};
     
     %look for bbf in different velocities (currently, all events that occur
     %in v_x, v_y and v_z also occur in v_r)
-    [vx_events, vx_event_properties, ~]=bbf_finder(vx, vx, x, y, z, r, t, 'vx', filename);
-    [vy_events, vy_event_properties, ~]=bbf_finder(vy, vx, x, y, z, r, t, 'vy', filename);
-    [vz_events, vz_event_properties, ~]=bbf_finder(vz, vx, x, y, z, r, t, 'vz', filename);
-    [vr_events, vr_event_properties, events_total]=bbf_finder(vr, vx, x, y, z, r, t, 'vr', filename);
+    [vx_events, vx_event_properties, ~]=bbf_finder(vx, vx, x, y, z, r, t, 'vx', spacecraft, filename);
+    [vy_events, vy_event_properties, ~]=bbf_finder(vy, vx, x, y, z, r, t, 'vy', spacecraft, filename);
+    [vz_events, vz_event_properties, ~]=bbf_finder(vz, vx, x, y, z, r, t, 'vz', spacecraft, filename);
+    [vr_events, vr_event_properties, events_total]=bbf_finder(vr, vx, x, y, z, r, t, 'vr', spacecraft, filename);
     
     %add the events to the data table
     data.table.vx_events=vx_events;
@@ -92,6 +98,7 @@ for file=1:numel(data.filename)
         meta_events_total{file}=uint16(0);
         meta_events_class{file}=uint16(0);
     end
+    meta_spacecraft{file}=spacecraft;
     
     display(sprintf('*** Analyzing file %d/%d took %0.2fs ***', file, numel(data.filename), toc))
    
@@ -126,8 +133,8 @@ end
 
 %write meta data to table
 meta.table = table(meta_filename', meta_date_string',...
-    cell2mat(meta_date_number'), cell2mat(meta_events_total'), cell2mat(meta_events_class'));
-meta.table.Properties.VariableNames = {'filename', 'date_string', 'date_number', 'events_total', 'events_class'};
+    cell2mat(meta_date_number'), cell2mat(meta_events_total'), cell2mat(meta_events_class'), cell2mat(meta_spacecraft'));
+meta.table.Properties.VariableNames = {'filename', 'date_string', 'date_number', 'events_total', 'events_class', 'spacecraft'};
 
 %export meta data if there is no old data available
 if ~exist([meta.filepath, '\\', meta.filename],'file')
@@ -145,7 +152,7 @@ else
     meta.table=vertcat(meta.table, meta.old_table(find(~updated_files),:));
     
     %sort table after the date columns
-    meta.table=sortrows(meta.table, 'date_number');
+    meta.table=sortrows(meta.table, 'dt');
     
     %export the meta data
     writetable(meta.table, [meta.filepath, '\\', meta.filename], 'Delimiter', ';');
@@ -163,7 +170,7 @@ end
 
 
 %find bbf events based on one velocity v_i and a positive v_x component
-function [vi_events, event_properties, events_total]=bbf_finder(vi, vx, x, y, z, r, t, component, filename)
+function [vi_events, event_properties, events_total]=bbf_finder(vi, vx, x, y, z, r, t, component, spacecraft, filename)
 
 %initialize vector that contain 0 for no event and 1 for
 %events
@@ -192,6 +199,7 @@ event_x={nan};
 event_y={nan};
 event_z={nan};
 event_r={nan};
+event_spacecraft={nan};
 
 %iterate through each the velocity vector
 for index=2:numel(vi)
@@ -236,12 +244,13 @@ for index=2:numel(vi)
         event_duration{events_total}=(t(end_index)-t(start_index))*24*60*60;
         event_classification{events_total}=class;
         event_component{events_total}=component;
-        event_vi_max{events_total}=signed_max_abs(vi(start_index:end_index));
+        event_vi_max{events_total}=get_signed_max_abs(vi(start_index:end_index));
         event_vi_mean{events_total}=mean(vi(start_index:end_index));
         event_x{events_total}=get_location(x(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});
-        event_y{events_total}=get_location(y(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});;
-        event_z{events_total}=get_location(z(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});;
-        event_r{events_total}=get_location(r(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});;
+        event_y{events_total}=get_location(y(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});
+        event_z{events_total}=get_location(z(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});
+        event_r{events_total}=get_location(r(start_index:end_index), vi(start_index:end_index), event_vi_max{events_total});
+        event_spacecraft{events_total}=spacecraft;
     end
     
     
@@ -251,16 +260,18 @@ end
 
 
 %write properties to table
-event_properties=table(event_filename', cell2mat(event_start_date'), cell2mat(event_end_date'), cell2mat(event_duration'), cell2mat(event_classification'), event_component', cell2mat(event_vi_max'), cell2mat(event_vi_mean'), cell2mat(event_x'), cell2mat(event_y'), cell2mat(event_z'), cell2mat(event_r'));
+event_properties=table(event_filename', cell2mat(event_start_date'), cell2mat(event_end_date'), cell2mat(event_duration'), cell2mat(event_classification'), event_component', cell2mat(event_vi_max'), cell2mat(event_vi_mean'), cell2mat(event_x'), cell2mat(event_y'), cell2mat(event_z'), cell2mat(event_r'), cell2mat(event_spacecraft'));
 event_properties.Properties.VariableNames={'filename', 'start_date', 'end_date',...
-    'duration', 'classification', 'component', 'v_max', 'v_mean', 'x', 'y', 'z', 'r'};
+    'duration', 'classification', 'component', 'v_max', 'v_mean', 'x', 'y', 'z', 'r', 'spacecraft'};
 end
 
-function signed_max_abs_val=signed_max_abs(data)
+%get the signed maximum absolute value
+function signed_max_abs_val=get_signed_max_abs(data)
     [~,max_abs_index]=max(abs(data));
     signed_max_abs_val=data(max_abs_index);
 end
 
+%get the location of the maximum velocity
 function location=get_location(ri,vi,vmax)
     location=ri(vi==vmax);
     if numel(location)>1

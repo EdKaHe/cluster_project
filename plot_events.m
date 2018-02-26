@@ -224,7 +224,102 @@ edit_max_classification_xpos=text_classification_xpos+edit_max_classification_wi
 edit_max_classification_ypos=text_classification_ypos-edit_max_classification_height+10;
 events.edit.max_classification.Position=[edit_max_classification_xpos, edit_max_classification_ypos, edit_max_classification_width, edit_max_classification_height];
 
-%create textboxes for classification
+%create textboxes for component
+events.text.component=uicontrol('Style', 'text');
+events.text.component.String='component';
+events.text.component.HorizontalAlignment='left';
+%position the textbox
+text_component_width=popup_ydata_width/2;
+text_component_height=slider_date_height;
+text_component_xpos=events.ax.Position(1)+events.ax.Position(3)+5;
+text_component_ypos=edit_max_classification_ypos-text_component_height-10;
+events.text.component.Position=[text_component_xpos, text_component_ypos, text_component_width, text_component_height];
+
+%create buttons to select velocity components
+events.radiobutton.v_x = uicontrol('Style', 'radiobutton');
+events.radiobutton.v_x.String='v_x';
+events.radiobutton.v_x.Value=1;
+events.radiobutton.v_x.Callback=@filter_data;
+%position the button
+rb_v_x_width=popup_ydata_width/4;
+rb_v_x_height=slider_date_height;
+rb_v_x_xpos=events.ax.Position(1)+events.ax.Position(3)+5;
+rb_v_x_ypos=text_component_ypos-rb_v_x_height+10;
+events.radiobutton.v_x.Position=[rb_v_x_xpos, rb_v_x_ypos, rb_v_x_width, rb_v_x_height];
+
+              
+%create buttons to select velocity components
+events.radiobutton.v_y = uicontrol('Style', 'radiobutton');
+events.radiobutton.v_y.String='v_y';
+events.radiobutton.v_y.Value=1;
+events.radiobutton.v_y.Callback=@filter_data;
+%position the button
+rb_v_y_width=popup_ydata_width/4;
+rb_v_y_height=slider_date_height;
+rb_v_y_xpos=events.ax.Position(1)+events.ax.Position(3)+rb_v_x_width+5;
+rb_v_y_ypos=text_component_ypos-rb_v_y_height+10;
+events.radiobutton.v_y.Position=[rb_v_y_xpos, rb_v_y_ypos, rb_v_y_width, rb_v_y_height];
+              
+%create buttons to select velocity components
+events.radiobutton.v_z = uicontrol('Style', 'radiobutton');
+events.radiobutton.v_z.String='v_z';
+events.radiobutton.v_z.Value=1;
+events.radiobutton.v_z.Callback=@filter_data;
+%position the button
+rb_v_z_width=popup_ydata_width/4;
+rb_v_z_height=slider_date_height;
+rb_v_z_xpos=events.ax.Position(1)+events.ax.Position(3)+2*rb_v_x_width+10;
+rb_v_z_ypos=text_component_ypos-rb_v_z_height+10;
+events.radiobutton.v_z.Position=[rb_v_z_xpos, rb_v_z_ypos, rb_v_z_width, rb_v_z_height];
+              
+%create buttons to select velocity components
+events.radiobutton.v_r = uicontrol('Style', 'radiobutton');
+events.radiobutton.v_r.String='v_r';
+events.radiobutton.v_r.Value=1;
+events.radiobutton.v_r.Callback=@filter_data;
+%position the button
+rb_v_r_width=popup_ydata_width/4;
+rb_v_r_height=slider_date_height;
+rb_v_r_xpos=events.ax.Position(1)+events.ax.Position(3)+3*rb_v_x_width+15;
+rb_v_r_ypos=text_component_ypos-rb_v_r_height+10;
+events.radiobutton.v_r.Position=[rb_v_r_xpos, rb_v_r_ypos, rb_v_r_width, rb_v_r_height];
+
+%create textboxes for spacecraft
+events.text.spacecraft=uicontrol('Style', 'text');
+events.text.spacecraft.String='spacecraft';
+events.text.spacecraft.HorizontalAlignment='left';
+%position the textbox
+text_spacecraft_width=popup_ydata_width/2;
+text_spacecraft_height=slider_date_height;
+text_spacecraft_xpos=events.ax.Position(1)+events.ax.Position(3)+5;
+text_spacecraft_ypos=rb_v_r_ypos-text_spacecraft_height-10;
+events.text.spacecraft.Position=[text_spacecraft_xpos, text_spacecraft_ypos, text_spacecraft_width, text_spacecraft_height];
+
+%create buttons to select spacecraft
+events.radiobutton.sc1 = uicontrol('Style', 'radiobutton');
+events.radiobutton.sc1.String='Spacecraft 1';
+events.radiobutton.sc1.Value=1;
+events.radiobutton.sc1.Callback=@filter_data;
+%position the button
+rb_sc1_width=popup_ydata_width/2;
+rb_sc1_height=slider_date_height;
+rb_sc1_xpos=events.ax.Position(1)+events.ax.Position(3)+5;
+rb_sc1_ypos=text_spacecraft_ypos-rb_sc1_height+10;
+events.radiobutton.sc1.Position=[rb_sc1_xpos, rb_sc1_ypos, rb_sc1_width, rb_sc1_height];
+
+%create buttons to select spacecraft
+events.radiobutton.sc3 = uicontrol('Style', 'radiobutton');
+events.radiobutton.sc3.String='Spacecraft 3';
+events.radiobutton.sc3.Value=1;
+events.radiobutton.sc3.Callback=@filter_data;
+%position the button
+rb_sc3_width=popup_ydata_width/2;
+rb_sc3_height=slider_date_height;
+rb_sc3_xpos=events.ax.Position(1)+events.ax.Position(3)+rb_sc3_width+10;
+rb_sc3_ypos=text_spacecraft_ypos-rb_sc3_height+10;
+events.radiobutton.sc3.Position=[rb_sc3_xpos, rb_sc3_ypos, rb_sc3_width, rb_sc3_height];
+              
+%create textboxes for total amount of events
 events.text.total_events=uicontrol('Style', 'text');
 events.text.total_events.String=sprintf('Total events: %0.0f', numel(events.table.start_date(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String))));
 events.text.total_events.HorizontalAlignment='left';
@@ -234,8 +329,9 @@ events.text.total_events.FontSize=10;
 text_total_events_width=popup_ydata_width;
 text_total_events_height=slider_date_height;
 text_total_events_xpos=events.ax.Position(1)+events.ax.Position(3)+5;
-text_total_events_ypos=edit_max_classification_ypos-text_total_events_height-20;
+text_total_events_ypos=rb_sc1_ypos-text_total_events_height-20;
 events.text.total_events.Position=[text_total_events_xpos, text_total_events_ypos, text_total_events_width, text_total_events_height];
+
 
 %set the data for plot
 xdata=events.table.start_date(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
@@ -288,6 +384,7 @@ events.fig.Visible='on';
         component=events.table.component(event_index);
         v_max=events.table.v_max(event_index);
         v_mean=events.table.v_mean(event_index);
+        spacecraft=events.table.spacecraft(event_index);
 
         %format the component
         component=strsplit(component{1}, 'v');
@@ -300,7 +397,8 @@ events.fig.Visible='on';
             sprintf('v_max: %0.0f km/s', v_max),...
             sprintf('v_mean: %0.0f km/s', v_mean),...
             sprintf('Classification: %d', classification),...
-            sprintf('Component: %s', component)};
+            sprintf('Component: %s', component),...
+            sprintf('Spacecraft: %d', spacecraft)};
     end
 
     function update_xdata(source,event)
@@ -311,7 +409,7 @@ events.fig.Visible='on';
         switch selection_string
             case 't'
                 %update the plot data
-                xdata=events.table.start_date(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                xdata=events.table.start_date(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.XData=xdata;
                 %restyl the axis
                 events.ax.XLabel.String='';
@@ -329,7 +427,7 @@ events.fig.Visible='on';
                 events.ax.XTickMode='auto';
                 events.ax.XTickLabelMode='auto';
                 %update the plot data
-                xdata=events.table.x(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                xdata=events.table.x(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.XData=xdata;
                 %restyle the axis
                 events.ax.XLim=[-22 22];
@@ -341,7 +439,7 @@ events.fig.Visible='on';
                 events.ax.XTickMode='auto';
                 events.ax.XTickLabelMode='auto';
                 %update the plot data
-                xdata=events.table.y(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                xdata=events.table.y(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.XData=xdata;
                 %restyle the axis
                 events.ax.XLim=[-22 22];
@@ -353,7 +451,7 @@ events.fig.Visible='on';
                 events.ax.XTickMode='auto';
                 events.ax.XTickLabelMode='auto';
                 %update the plot data
-                xdata=events.table.z(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                xdata=events.table.z(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.XData=xdata;
                 %restyle the axis
                 events.ax.XLim=[-22 22];
@@ -365,7 +463,7 @@ events.fig.Visible='on';
                 events.ax.XTickMode='auto';
                 events.ax.XTickLabelMode='auto';
                 %update the plot data
-                xdata=events.table.r(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                xdata=events.table.r(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.XData=xdata;
                 %restyle the axis
                 events.ax.XLim=[-22 22];
@@ -385,28 +483,28 @@ events.fig.Visible='on';
         switch selection_string
             case 'duration'
                 %update the plot data
-                ydata=events.table.duration(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                ydata=events.table.duration(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.YData=ydata;
                 %restyle the axis
                 events.ax.YLim=[min(ydata)-0.05*(max(ydata)-min(ydata)), max(ydata)+0.05*max((ydata-min(ydata)))];
                 events.ax.YLabel.String='Duration in (min)';
             case 'v_max'
                 %update the plot data
-                ydata=events.table.v_max(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                ydata=events.table.v_max(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.YData=ydata;
                 %restyle the axis
                 events.ax.YLim=[min(ydata)-0.05*(max(ydata)-min(ydata)), max(ydata)+0.05*max((ydata-min(ydata)))];
                 events.ax.YLabel.String='v_{max} in (km/s)';
             case 'v_mean'
                 %update the plot data
-                ydata=events.table.v_mean(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                ydata=events.table.v_mean(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.YData=ydata;
                 %restyle the axis
                 events.ax.YLim=[min(ydata)-0.05*(max(ydata)-min(ydata)), max(ydata)+0.05*max((ydata-min(ydata)))];
                 events.ax.YLabel.String='v_{mean} in (km/s)';
             case 'classification'
                 %update the plot data
-                ydata=events.table.classification(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
+                ydata=events.table.classification(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
                 events.plot.YData=ydata;
                 %restyle the axis
                 events.ax.YLim=[min(ydata)-0.05*(max(ydata)-min(ydata)), max(ydata)+0.05*max((ydata-min(ydata)))];
@@ -425,8 +523,6 @@ events.fig.Visible='on';
 
 
     function filter_data(source, event)
-        %change the displayed number of total events
-        events.text.total_events.String=sprintf('Total events: %0.0f', numel(events.table.start_date(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String))));
         
         %get the selected date from the user selection
         selection_xdata=events.popup.xdata.String(events.popup.xdata.Value);
@@ -467,11 +563,14 @@ events.fig.Visible='on';
                 return
         end
         
+        %change the displayed number of total events
+        events.text.total_events.String=sprintf('Total events: %0.0f', numel(events.table.start_date(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection())));
+        
         %get data that meets conditions
         try
-            xdata=xdata(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
-            ydata=ydata(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String));
-            cdata=cdata(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String),:);
+            xdata=xdata(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
+            ydata=ydata(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection());
+            cdata=cdata(events.table.duration>=str2double(events.edit.min_duration.String) & events.table.duration<=str2double(events.edit.max_duration.String) & events.table.v_max<=str2double(events.edit.max_v_max.String) & events.table.v_max>=str2double(events.edit.min_v_max.String) & events.table.v_mean<=str2double(events.edit.max_v_mean.String) & events.table.v_mean>=str2double(events.edit.min_v_mean.String) & events.table.classification<=str2double(events.edit.max_classification.String) & events.table.classification>=str2double(events.edit.min_classification.String) & button_selection(),:);
         catch
             return
         end
@@ -484,6 +583,50 @@ events.fig.Visible='on';
             return
         end
     end
+
+    
+    %select data by pressed buttons
+    function button_selection=button_selection()
+        %select the velocity components
+        if events.radiobutton.v_x.Value==1
+            v_x_selection=strcmp(events.table.component, 'vx');
+        else 
+            v_x_selection=false(size(events.table.component));
+        end
+        if events.radiobutton.v_y.Value==1
+            v_y_selection=strcmp(events.table.component, 'vy');
+        else
+            v_y_selection=false(size(events.table.component));
+        end
+        if events.radiobutton.v_z.Value==1
+            v_z_selection=strcmp(events.table.component, 'vz');
+        else 
+            v_z_selection=false(size(events.table.component));
+        end
+        if events.radiobutton.v_r.Value==1
+            v_r_selection=strcmp(events.table.component, 'vr');
+        else 
+            v_r_selection=false(size(events.table.component));
+        end        
+        
+        %select the spacecrafts
+        if events.radiobutton.sc1.Value==1
+            sc1_selection=events.table.spacecraft==1;
+        else
+            sc1_selection=false(size(events.table.spacecraft));
+        end
+        if events.radiobutton.sc3.Value==1
+            sc3_selection=events.table.spacecraft==3;
+        else
+            sc3_selection=false(size(events.table.spacecraft));
+        end
+        
+        %combine all the selections
+        velocity_selection=v_x_selection | v_y_selection | v_z_selection | v_r_selection ;
+        spacecraft_selection=sc1_selection | sc3_selection;
+        button_selection=velocity_selection & spacecraft_selection;
+    end
+
 
 
 
