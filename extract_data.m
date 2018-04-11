@@ -9,7 +9,7 @@ irfu_dir=path.irfu_dir{1};
 %Make function executable without input arguments
 if nargin==0
     display('No input arguments are given! Default values are taken...')
-    startdate=[2001, 01, 01]; %[yy mm dd]
+    startdate=[2012, 01, 01]; %[yy mm dd]
     enddate=[2012, 12, 31]; %[yy mm dd]
 elseif nargin==1
     display('Please enter start- and enddate! Process aborted...')

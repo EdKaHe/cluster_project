@@ -31,6 +31,9 @@ meta.filepath = path.meta_data_dir{1};
 meta.filename = 'meta.csv';
 %read the meta data
 meta.table = readtable([meta.filepath, '\\', meta.filename], 'Delimiter', ';');
+%extract the data that is loaded
+meta.table=meta.table(ismember(meta.table.date_number, data.filedate),:);
+
 
 
 
@@ -47,12 +50,12 @@ plasma.ax.Box='on';
 plasma.ax.XLabel.String='t in (hh:mm)';
 plasma.ax.YLabel.String='v_{gsm} in (km/s)';
 plasma.ax.FontSize=12;
-if ~isnan(min([data.table.vx_gsm3', data.table.vy_gsm3', data.table.vz_gsm3'])) && ~isnan(max(data.table.vr_gsm3))
-    plasma.ax.YLim=[1.1*min([data.table.vx_gsm3', data.table.vy_gsm3', data.table.vz_gsm3']), 1.1*max(data.table.vr_gsm3)];
+if ~isnan(min([data.table.vx_gsm', data.table.vy_gsm', data.table.vz_gsm'])) && ~isnan(max(data.table.vr_gsm))
+    plasma.ax.YLim=[1.1*min([data.table.vx_gsm', data.table.vy_gsm', data.table.vz_gsm']), 1.1*max(data.table.vr_gsm)];
 end
 %change x-axis to date-axis
 four_hours=240/(60*24);
-plasma.ax.XTick=(data.table.date_number(1):four_hours:data.table.date_number(end));
+plasma.ax.XTick=(data.table.dt(1):four_hours:data.table.dt(end));
 datetick(plasma.ax, 'x', 'HH:MM', 'keeplimits', 'keepticks')
 %position the axes
 plasma.ax.Position=[75, 75, 450, 320];
@@ -67,17 +70,17 @@ plasma.plot.c2=highlight_event(data.table,plasma.ax,2);
 plasma.plot.c1=highlight_event(data.table,plasma.ax,1);
 
 %create the timeline
-plasma.plot.timeline=plot(plasma.ax, [data.table.date_number(1), data.table.date_number(1)], plasma.ax.YLim);
+plasma.plot.timeline=plot(plasma.ax, [data.table.dt(1), data.table.dt(1)], plasma.ax.YLim);
 %style the timeline
 plasma.plot.timeline.LineWidth=5;
 plasma.plot.timeline.Color=[0.85,0.85,0.85];
 plasma.plot.timeline.LineStyle='-';
 
 %plot the plasma data
-plasma.plot.vx=plot(plasma.ax, data.table.date_number, data.table.vx_gsm3);
-plasma.plot.vy=plot(plasma.ax, data.table.date_number, data.table.vy_gsm3);
-plasma.plot.vz=plot(plasma.ax, data.table.date_number, data.table.vz_gsm3);
-plasma.plot.vr=plot(plasma.ax, data.table.date_number, data.table.vr_gsm3);
+plasma.plot.vx=plot(plasma.ax, data.table.dt, data.table.vx_gsm);
+plasma.plot.vy=plot(plasma.ax, data.table.dt, data.table.vy_gsm);
+plasma.plot.vz=plot(plasma.ax, data.table.dt, data.table.vz_gsm);
+plasma.plot.vr=plot(plasma.ax, data.table.dt, data.table.vr_gsm);
 %style the plasma plot
 plasma.plot.vx.LineWidth=2;
 plasma.plot.vx.Color=[1,0,0];
@@ -124,7 +127,7 @@ plasma.popup_date.Position=[popup_date_xpos, popup_date_ypos, popup_date_width, 
 %Create slider
 plasma.slider_time = uicontrol('Style', 'slider');
 plasma.slider_time.Min = 0;
-plasma.slider_time.Max = numel(data.table.date_number);
+plasma.slider_time.Max = numel(data.table.dt);
 plasma.slider_time.SliderStep=[1/150, 1/25];
 % plasma.slider_time.Callback=@update_time;
 %position the slider
@@ -151,13 +154,13 @@ location.time.ax.Box='on';
 location.time.ax.XLabel.String='t in (hh:mm)';
 location.time.ax.YLabel.String='r_{gsm} in (R_{E})';
 location.time.ax.FontSize=12;
-if ~isnan(min([data.table.x_gsmRE3', data.table.y_gsmRE3', data.table.z_gsmRE3'])) && ~isnan(max(data.table.r_gsmRE3))
-    location.time.ax.YLim=[1.1*min([data.table.x_gsmRE3', data.table.y_gsmRE3', data.table.z_gsmRE3']),...
-        1.1*max(data.table.r_gsmRE3)];
+if ~isnan(min([data.table.x_gsm', data.table.y_gsm', data.table.z_gsm'])) && ~isnan(max(data.table.r_gsm))
+    location.time.ax.YLim=[1.1*min([data.table.x_gsm', data.table.y_gsm', data.table.z_gsm']),...
+        1.1*max(data.table.r_gsm)];
 end
 %change x-axis to date-axis
 four_hours=240/(60*24);
-location.time.ax.XTick=(data.table.date_number(1):four_hours:data.table.date_number(end));
+location.time.ax.XTick=(data.table.dt(1):four_hours:data.table.dt(end));
 datetick(location.time.ax, 'x', 'HH:MM', 'keeplimits', 'keepticks')
 %position the axes
 location.time.ax.Position=[75, 75, 350, 320];
@@ -168,7 +171,7 @@ location.time.ax.YGrid='on';
 linkaxes([location.time.ax, plasma.ax], 'x');
 
 %create the timeline
-location.time.plot.timeline=plot(location.time.ax, [data.table.date_number(1), data.table.date_number(1)], location.time.ax.YLim);
+location.time.plot.timeline=plot(location.time.ax, [data.table.dt(1), data.table.dt(1)], location.time.ax.YLim);
 %style the timeline
 location.time.plot.timeline.LineWidth=5;
 location.time.plot.timeline.Color=[0.85,0.85,0.85];
@@ -180,10 +183,10 @@ location.time.plot.c2=highlight_event(data.table,location.time.ax,2);
 location.time.plot.c1=highlight_event(data.table,location.time.ax,1);
 
 %plot the location.time data
-location.time.plot.x=plot(location.time.ax, data.table.date_number, data.table.x_gsmRE3);
-location.time.plot.y=plot(location.time.ax, data.table.date_number, data.table.y_gsmRE3);
-location.time.plot.z=plot(location.time.ax, data.table.date_number, data.table.z_gsmRE3);
-location.time.plot.r=plot(location.time.ax, data.table.date_number, data.table.r_gsmRE3);
+location.time.plot.x=plot(location.time.ax, data.table.dt, data.table.x_gsm);
+location.time.plot.y=plot(location.time.ax, data.table.dt, data.table.y_gsm);
+location.time.plot.z=plot(location.time.ax, data.table.dt, data.table.z_gsm);
+location.time.plot.r=plot(location.time.ax, data.table.dt, data.table.r_gsm);
 %style the location.time plot
 location.time.plot.x.LineWidth=2;
 location.time.plot.x.Color=[1,0,0];
@@ -268,7 +271,7 @@ location.space.plot.meridian.FaceAlpha=0.5;
 location.space.plot.meridian.EdgeAlpha=0;
 
 %plot the orbit
-location.space.plot.orbit=plot3(location.space.ax,data.table.x_gsmRE3,data.table.y_gsmRE3,data.table.z_gsmRE3);
+location.space.plot.orbit=plot3(location.space.ax,data.table.x_gsm,data.table.y_gsm,data.table.z_gsm);
 %style the orbit
 location.space.plot.orbit.LineWidth=3;
 location.space.plot.orbit.Color=[0.5,0.5,0.5];
@@ -277,7 +280,7 @@ location.space.plot.orbit.LineStyle='-';
 %plot the events on the orbit
 events=data.table.vr_events;
 location.space.plot.c1=plot3(location.space.ax,nan,nan,nan);
-[location.space.plot.c1.XData, location.space.plot.c1.YData, location.space.plot.c1.ZData]=deal(data.table.x_gsmRE3(events==1), data.table.y_gsmRE3(events==1), data.table.z_gsmRE3(events==1));
+[location.space.plot.c1.XData, location.space.plot.c1.YData, location.space.plot.c1.ZData]=deal(data.table.x_gsm(events==1), data.table.y_gsm(events==1), data.table.z_gsm(events==1));
 %style the events
 location.space.plot.c1.LineStyle='none';
 location.space.plot.c1.Color=[0.95,0.95,0.0];
@@ -288,7 +291,7 @@ location.space.plot.c1.MarkerFaceColor=[0.95,0.95,0];
 %plot the events on the orbit
 events=data.table.vr_events;
 location.space.plot.c2=plot3(location.space.ax,nan,nan,nan);
-[location.space.plot.c2.XData, location.space.plot.c2.YData, location.space.plot.c2.ZData]=deal(data.table.x_gsmRE3(events==2), data.table.y_gsmRE3(events==2), data.table.z_gsmRE3(events==2));
+[location.space.plot.c2.XData, location.space.plot.c2.YData, location.space.plot.c2.ZData]=deal(data.table.x_gsm(events==2), data.table.y_gsm(events==2), data.table.z_gsm(events==2));
 %style the events
 location.space.plot.c2.LineStyle='none';
 location.space.plot.c2.Color=[1,0.6,0];
@@ -299,7 +302,7 @@ location.space.plot.c2.MarkerFaceColor=[1,0.6,0];
 %plot the events on the orbit
 events=data.table.vr_events;
 location.space.plot.c3=plot3(location.space.ax,nan,nan,nan);
-[location.space.plot.c3.XData, location.space.plot.c3.YData, location.space.plot.c3.ZData]=deal(data.table.x_gsmRE3(events==3), data.table.y_gsmRE3(events==3), data.table.z_gsmRE3(events==3));
+[location.space.plot.c3.XData, location.space.plot.c3.YData, location.space.plot.c3.ZData]=deal(data.table.x_gsm(events==3), data.table.y_gsm(events==3), data.table.z_gsm(events==3));
 %style the events
 location.space.plot.c3.LineStyle='none';
 location.space.plot.c3.Color=[0.75,0,0];
@@ -311,7 +314,7 @@ location.space.plot.c3.MarkerFaceColor=[0.75,0,0];
 [x_sat, y_sat, z_sat] = sphere(20);
 radius=0.5;
 %plot the earth
-location.space.plot.sat=surf(location.space.ax, x_sat*radius+data.table.x_gsmRE3(1), y_sat*radius+data.table.y_gsmRE3(1), z_sat*radius+data.table.z_gsmRE3(1));
+location.space.plot.sat=surf(location.space.ax, x_sat*radius+data.table.x_gsm(1), y_sat*radius+data.table.y_gsm(1), z_sat*radius+data.table.z_gsm(1));
 %style the earth
 location.space.plot.sat.FaceColor=[1,0,0];
 location.space.plot.sat.FaceAlpha=0.9;
@@ -329,56 +332,61 @@ location.space.plot.sat.EdgeAlpha=0;
         
         for date=1:numel(str)
             %check whether the filename matches the selected date
-            if ~isempty(strfind(data.filename{date}, datestr(data.filedate(val), 'yymmdd')))
+            if ~isempty(strfind(data.filename{date}, datestr(meta.table.date_number(val), 'yymmdd'))) && ~isempty(strfind(data.filename{date}, sprintf('c%.0d', meta.table.spacecraft(val))))
                 %read new data from selected date
                 data.table = readtable([data.filepath, '\\', data.filename{date}], 'Delimiter', ';');
+                %change all zeros (no event) to nans
+                data.table.vx_events(data.table.vx_events==0)=nan;
+                data.table.vy_events(data.table.vy_events==0)=nan;
+                data.table.vz_events(data.table.vz_events==0)=nan;
+                data.table.vr_events(data.table.vr_events==0)=nan;
                 
                 %adjust the slider range
                 plasma.slider_time.Value = 0;
-                plasma.slider_time.Max = numel(data.table.date_number);
+                plasma.slider_time.Max = numel(data.table.dt);
                 
                 %update location.time plot
                 four_hours=240/(60*24);
-                location.time.ax.XTick=(min(data.table.date_number):four_hours:max(data.table.date_number(end)));
-                if min(data.table.date_number)~=max(data.table.date_number)
-                    location.time.ax.XLim=[min(data.table.date_number), max(data.table.date_number)];
+                location.time.ax.XTick=(min(data.table.dt):four_hours:max(data.table.dt(end)));
+                if min(data.table.dt)~=max(data.table.dt)
+                    location.time.ax.XLim=[min(data.table.dt), max(data.table.dt)];
                 end
-                if ~isnan(min([data.table.x_gsmRE3', data.table.y_gsmRE3', data.table.z_gsmRE3'])) && ~isnan(max(data.table.r_gsmRE3))
-                    location.time.ax.YLim=[1.1*min([data.table.x_gsmRE3', data.table.y_gsmRE3', data.table.z_gsmRE3']), 1.1*max(data.table.r_gsmRE3)];
+                if ~isnan(min([data.table.x_gsm', data.table.y_gsm', data.table.z_gsm'])) && ~isnan(max(data.table.r_gsm))
+                    location.time.ax.YLim=[1.1*min([data.table.x_gsm', data.table.y_gsm', data.table.z_gsm']), 1.1*max(data.table.r_gsm)];
                 end
                 datetick(location.time.ax, 'x', 'HH:MM', 'keeplimits', 'keepticks')
                 %update the location and time data
-                [location.time.plot.x.XData, location.time.plot.x.YData]=deal(data.table.date_number, data.table.x_gsmRE3);
-                [location.time.plot.y.XData, location.time.plot.y.YData]=deal(data.table.date_number, data.table.y_gsmRE3);
-                [location.time.plot.z.XData, location.time.plot.z.YData]=deal(data.table.date_number, data.table.z_gsmRE3);
-                [location.time.plot.r.XData, location.time.plot.r.YData]=deal(data.table.date_number, data.table.r_gsmRE3);
+                [location.time.plot.x.XData, location.time.plot.x.YData]=deal(data.table.dt, data.table.x_gsm);
+                [location.time.plot.y.XData, location.time.plot.y.YData]=deal(data.table.dt, data.table.y_gsm);
+                [location.time.plot.z.XData, location.time.plot.z.YData]=deal(data.table.dt, data.table.z_gsm);
+                [location.time.plot.r.XData, location.time.plot.r.YData]=deal(data.table.dt, data.table.r_gsm);
                 %highlight the events in the satellite orbit
                 events=data.table.vr_events;
-                [location.space.plot.c1.XData, location.space.plot.c1.YData, location.space.plot.c1.ZData]=deal(data.table.x_gsmRE3(events==1), data.table.y_gsmRE3(events==1), data.table.z_gsmRE3(events==1));
-                [location.space.plot.c2.XData, location.space.plot.c2.YData, location.space.plot.c2.ZData]=deal(data.table.x_gsmRE3(events==2), data.table.y_gsmRE3(events==2), data.table.z_gsmRE3(events==2));
-                [location.space.plot.c3.XData, location.space.plot.c3.YData, location.space.plot.c3.ZData]=deal(data.table.x_gsmRE3(events==3), data.table.y_gsmRE3(events==3), data.table.z_gsmRE3(events==3));
+                [location.space.plot.c1.XData, location.space.plot.c1.YData, location.space.plot.c1.ZData]=deal(data.table.x_gsm(events==1), data.table.y_gsm(events==1), data.table.z_gsm(events==1));
+                [location.space.plot.c2.XData, location.space.plot.c2.YData, location.space.plot.c2.ZData]=deal(data.table.x_gsm(events==2), data.table.y_gsm(events==2), data.table.z_gsm(events==2));
+                [location.space.plot.c3.XData, location.space.plot.c3.YData, location.space.plot.c3.ZData]=deal(data.table.x_gsm(events==3), data.table.y_gsm(events==3), data.table.z_gsm(events==3));
                 %draw orbit of satellite
-                [location.space.plot.orbit.XData, location.space.plot.orbit.YData, location.space.plot.orbit.ZData]=deal(data.table.x_gsmRE3, data.table.y_gsmRE3, data.table.z_gsmRE3);
+                [location.space.plot.orbit.XData, location.space.plot.orbit.YData, location.space.plot.orbit.ZData]=deal(data.table.x_gsm, data.table.y_gsm, data.table.z_gsm);
                 %draw satellite
-                [location.space.plot.sat.XData, location.space.plot.sat.YData, location.space.plot.sat.ZData]=deal(x_sat*radius+data.table.x_gsmRE3(1), y_sat*radius+data.table.y_gsmRE3(1), z_sat*radius+data.table.z_gsmRE3(1));
+                [location.space.plot.sat.XData, location.space.plot.sat.YData, location.space.plot.sat.ZData]=deal(x_sat*radius+data.table.x_gsm(1), y_sat*radius+data.table.y_gsm(1), z_sat*radius+data.table.z_gsm(1));
                 
                 %update plasma plot
                 %adjust axis to new dates
                 four_hours=240/(60*24);
-                plasma.ax.XTick=(data.table.date_number(1):four_hours:data.table.date_number(end));
-                if min(data.table.date_number)~=max(data.table.date_number)
-                    plasma.ax.XLim=[min(data.table.date_number), max(data.table.date_number)];
+                plasma.ax.XTick=(data.table.dt(1):four_hours:data.table.dt(end));
+                if min(data.table.dt)~=max(data.table.dt)
+                    plasma.ax.XLim=[min(data.table.dt), max(data.table.dt)];
                 end
-                if ~isnan(min([data.table.vx_gsm3', data.table.vy_gsm3', data.table.vz_gsm3'])) && ~isnan(max(data.table.vr_gsm3))
-                    plasma.ax.YLim=[1.1*min([data.table.vx_gsm3', data.table.vy_gsm3', data.table.vz_gsm3']), 1.1*max(data.table.vr_gsm3)];
+                if ~isnan(min([data.table.vx_gsm', data.table.vy_gsm', data.table.vz_gsm'])) && ~isnan(max(data.table.vr_gsm))
+                    plasma.ax.YLim=[1.1*min([data.table.vx_gsm', data.table.vy_gsm', data.table.vz_gsm']), 1.1*max(data.table.vr_gsm)];
                 end
                 datetick(plasma.ax, 'x', 'HH:MM', 'keeplimits', 'keepticks')
                 
                 %update the velocity data
-                [plasma.plot.vx.XData, plasma.plot.vx.YData]=deal(data.table.date_number, data.table.vx_gsm3);
-                [plasma.plot.vy.XData, plasma.plot.vy.YData]=deal(data.table.date_number, data.table.vy_gsm3);
-                [plasma.plot.vz.XData, plasma.plot.vz.YData]=deal(data.table.date_number, data.table.vz_gsm3);
-                [plasma.plot.vr.XData, plasma.plot.vr.YData]=deal(data.table.date_number, data.table.vr_gsm3);
+                [plasma.plot.vx.XData, plasma.plot.vx.YData]=deal(data.table.dt, data.table.vx_gsm);
+                [plasma.plot.vy.XData, plasma.plot.vy.YData]=deal(data.table.dt, data.table.vy_gsm);
+                [plasma.plot.vz.XData, plasma.plot.vz.YData]=deal(data.table.dt, data.table.vz_gsm);
+                [plasma.plot.vr.XData, plasma.plot.vr.YData]=deal(data.table.dt, data.table.vr_gsm);
              
                 %check whether there are bbf events and update data
                 data.table.vr_events(data.table.vr_events==0)=nan; %change all zeros (no event) to nans
@@ -395,9 +403,9 @@ location.space.plot.sat.EdgeAlpha=0;
                 location.time.plot.c1.delete;
                 location.time.plot.c2.delete;
                 location.time.plot.c3.delete;
-                location.time.c3=highlight_event(data.table,location.time.ax,3);
-                location.time.c2=highlight_event(data.table,location.time.ax,2);
-                location.time.c1=highlight_event(data.table,location.time.ax,1);
+                location.time.plot.c3=highlight_event(data.table,location.time.ax,3);
+                location.time.plot.c2=highlight_event(data.table,location.time.ax,2);
+                location.time.plot.c1=highlight_event(data.table,location.time.ax,1);
                 
               
                 
@@ -419,11 +427,11 @@ location.space.plot.sat.EdgeAlpha=0;
         
         %calculate the index set by the slider value
         index=floor(event.AffectedObject.Value);
-        plasma.plot.timeline.XData=[data.table.date_number(index), data.table.date_number(index)];
+        plasma.plot.timeline.XData=[data.table.dt(index), data.table.dt(index)];
         plasma.plot.timeline.YData=plasma.ax.YLim;
-        location.time.plot.timeline.XData=[data.table.date_number(index), data.table.date_number(index)];
+        location.time.plot.timeline.XData=[data.table.dt(index), data.table.dt(index)];
         location.time.plot.timeline.YData=location.time.ax.YLim;
-        [location.space.plot.sat.XData, location.space.plot.sat.YData, location.space.plot.sat.ZData]=deal(x_sat*radius+data.table.x_gsmRE3(index), y_sat*radius+data.table.y_gsmRE3(index), z_sat*radius+data.table.z_gsmRE3(index));
+        [location.space.plot.sat.XData, location.space.plot.sat.YData, location.space.plot.sat.ZData]=deal(x_sat*radius+data.table.x_gsm(index), y_sat*radius+data.table.y_gsm(index), z_sat*radius+data.table.z_gsm(index));
         
     end
 
@@ -431,17 +439,14 @@ location.space.plot.sat.EdgeAlpha=0;
 
 
     function [popup_string]=generate_popup_string()
-        common_dates=ismember(meta.table.date_number, data.filedate);
-        common_events_total=meta.table.events_total(common_dates);
-        common_events_class=meta.table.events_class(common_dates);
-        formatted_data=datestr(data.filedate, 'dd-mmm-yy');
+        formatted_data=datestr(meta.table.date_number, 'dd-mmm-yy');
         
         popup_string=cell(size(data.filedate));
-        for event=1:numel(common_events_total)
-            if common_events_total(event)>=1
-                popup_string{event}=[formatted_data(event,:), sprintf(' (T%.1dC%.1d)', common_events_total(event), common_events_class(event))];
+        for event=1:numel(meta.table.events_total)
+            if meta.table.events_total(event)>=1
+                popup_string{event}=[sprintf('C%.0d ', meta.table.spacecraft(event)), formatted_data(event,:), sprintf(' (T%.0dC%.0d)', meta.table.events_total(event), meta.table.events_class(event))];
             else
-                popup_string{event}=[formatted_data(event,:)];
+                popup_string{event}=[sprintf('C%.0d ', meta.table.spacecraft(event)), formatted_data(event,:)];
             end
         end
     end
@@ -476,7 +481,7 @@ location.space.plot.sat.EdgeAlpha=0;
 
     function caxis_area=highlight_event(data,caxis,class)
         %create the area
-        caxis_area=area(caxis, data.date_number, max(caxis.YLim)*filter_event(data.vr_events, class));
+        caxis_area=area(caxis, data.dt, max(caxis.YLim)*filter_event(data.vr_events, class));
         %style the area
         caxis_area.LineWidth=3;
         caxis_area.LineStyle=':';
